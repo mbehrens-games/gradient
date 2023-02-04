@@ -1,5 +1,5 @@
 /*******************************************************************************
-** GRADIENT (gradient file generation) - Michael Behrens 2019-2022
+** GRADIENT (gradient file generation) - Michael Behrens 2019-2023
 *******************************************************************************/
 
 /*******************************************************************************
@@ -25,22 +25,16 @@ enum
 {
   SOURCE_APPROX_NES = 0,
   SOURCE_APPROX_NES_ROTATED,
-  SOURCE_COMPOSITE_06_0p75X,
   SOURCE_COMPOSITE_06_3X,
+  SOURCE_COMPOSITE_06_3X_ROTATED,
   SOURCE_COMPOSITE_12_1p50X,
-  SOURCE_COMPOSITE_12_6X,
   SOURCE_COMPOSITE_18_1X,
-  SOURCE_COMPOSITE_24_0p75X,
+  SOURCE_COMPOSITE_18_1X_ROTATED,
+  SOURCE_COMPOSITE_12_6X,
   SOURCE_COMPOSITE_24_3X,
+  SOURCE_COMPOSITE_24_3X_ROTATED,
   SOURCE_COMPOSITE_36_2X,
   SOURCE_COMPOSITE_48_1p50X
-};
-
-enum
-{
-  HUE_MODIFIER_FULL = 0,
-  HUE_MODIFIER_LOWER_HALF,
-  HUE_MODIFIER_UPPER_HALF
 };
 
 /* the table step is 1 / (n + 2), where */
@@ -173,20 +167,15 @@ short int generate_voltage_tables()
 *******************************************************************************/
 short int set_voltage_table_pointers()
 {
-  if (G_source == SOURCE_APPROX_NES)
+  if ((G_source == SOURCE_APPROX_NES) || 
+      (G_source == SOURCE_APPROX_NES_ROTATED))
   {
     S_luma_table = S_approx_nes_lum;
     S_saturation_table = S_approx_nes_sat;
     S_table_length = 4;
   }
-  else if (G_source == SOURCE_APPROX_NES_ROTATED)
-  {
-    S_luma_table = S_approx_nes_lum;
-    S_saturation_table = S_approx_nes_sat;
-    S_table_length = 4;
-  }
-  else if ( (G_source == SOURCE_COMPOSITE_06_0p75X) || 
-            (G_source == SOURCE_COMPOSITE_06_3X))
+  else if ( (G_source == SOURCE_COMPOSITE_06_3X) || 
+            (G_source == SOURCE_COMPOSITE_06_3X_ROTATED))
   {
     S_luma_table = S_composite_06_lum;
     S_saturation_table = S_composite_06_sat;
@@ -199,14 +188,15 @@ short int set_voltage_table_pointers()
     S_saturation_table = S_composite_12_sat;
     S_table_length = 12;
   }
-  else if (G_source == SOURCE_COMPOSITE_18_1X)
+  else if ( (G_source == SOURCE_COMPOSITE_18_1X) || 
+            (G_source == SOURCE_COMPOSITE_18_1X_ROTATED))
   {
     S_luma_table = S_composite_18_lum;
     S_saturation_table = S_composite_18_sat;
     S_table_length = 18;
   }
-  else if ( (G_source == SOURCE_COMPOSITE_24_0p75X) || 
-            (G_source == SOURCE_COMPOSITE_24_3X))
+  else if ( (G_source == SOURCE_COMPOSITE_24_3X) || 
+            (G_source == SOURCE_COMPOSITE_24_3X_ROTATED))
   {
     S_luma_table = S_composite_24_lum;
     S_saturation_table = S_composite_24_sat;
@@ -298,14 +288,15 @@ short int generate_shades_from_source()
     add_shade(255, 255, 255);
   }
   /* composite source */
-  else if ( (G_source == SOURCE_COMPOSITE_06_0p75X) || 
-            (G_source == SOURCE_COMPOSITE_06_3X)    || 
-            (G_source == SOURCE_COMPOSITE_12_1p50X) || 
-            (G_source == SOURCE_COMPOSITE_12_6X)    || 
-            (G_source == SOURCE_COMPOSITE_18_1X)    || 
-            (G_source == SOURCE_COMPOSITE_24_0p75X) || 
-            (G_source == SOURCE_COMPOSITE_24_3X)    || 
-            (G_source == SOURCE_COMPOSITE_36_2X)    || 
+  else if ( (G_source == SOURCE_COMPOSITE_06_3X)          || 
+            (G_source == SOURCE_COMPOSITE_06_3X_ROTATED)  || 
+            (G_source == SOURCE_COMPOSITE_12_1p50X)       || 
+            (G_source == SOURCE_COMPOSITE_12_6X)          || 
+            (G_source == SOURCE_COMPOSITE_18_1X)          || 
+            (G_source == SOURCE_COMPOSITE_18_1X_ROTATED)  || 
+            (G_source == SOURCE_COMPOSITE_24_3X)          || 
+            (G_source == SOURCE_COMPOSITE_24_3X_ROTATED)  || 
+            (G_source == SOURCE_COMPOSITE_36_2X)          || 
             (G_source == SOURCE_COMPOSITE_48_1p50X))
   {
     /* add greys */
@@ -516,20 +507,22 @@ int main(int argc, char *argv[])
         G_source = SOURCE_APPROX_NES;
       else if (!strcmp("approx_nes_rotated", argv[i]))
         G_source = SOURCE_APPROX_NES_ROTATED;
-      else if (!strcmp("composite_06_0p75x", argv[i]))
-        G_source = SOURCE_COMPOSITE_06_0p75X;
       else if (!strcmp("composite_06_3x", argv[i]))
         G_source = SOURCE_COMPOSITE_06_3X;
+      else if (!strcmp("composite_06_3x_rotated", argv[i]))
+        G_source = SOURCE_COMPOSITE_06_3X_ROTATED;
       else if (!strcmp("composite_12_1p50x", argv[i]))
         G_source = SOURCE_COMPOSITE_12_1p50X;
       else if (!strcmp("composite_12_6x", argv[i]))
         G_source = SOURCE_COMPOSITE_12_6X;
       else if (!strcmp("composite_18_1x", argv[i]))
         G_source = SOURCE_COMPOSITE_18_1X;
-      else if (!strcmp("composite_24_0p75x", argv[i]))
-        G_source = SOURCE_COMPOSITE_24_0p75X;
+      else if (!strcmp("composite_18_1x_rotated", argv[i]))
+        G_source = SOURCE_COMPOSITE_18_1X_ROTATED;
       else if (!strcmp("composite_24_3x", argv[i]))
         G_source = SOURCE_COMPOSITE_24_3X;
+      else if (!strcmp("composite_24_3x_rotated", argv[i]))
+        G_source = SOURCE_COMPOSITE_24_3X_ROTATED;
       else if (!strcmp("composite_36_2x", argv[i]))
         G_source = SOURCE_COMPOSITE_36_2X;
       else if (!strcmp("composite_48_1p50x", argv[i]))
@@ -554,9 +547,9 @@ int main(int argc, char *argv[])
     strncpy(output_base_filename, "approx_nes", 16);
   else if (G_source == SOURCE_APPROX_NES_ROTATED)
     strncpy(output_base_filename, "approx_nes", 24);
-  else if (G_source == SOURCE_COMPOSITE_06_0p75X)
-    strncpy(output_base_filename, "composite_06", 24);
   else if (G_source == SOURCE_COMPOSITE_06_3X)
+    strncpy(output_base_filename, "composite_06", 24);
+  else if (G_source == SOURCE_COMPOSITE_06_3X_ROTATED)
     strncpy(output_base_filename, "composite_06", 24);
   else if (G_source == SOURCE_COMPOSITE_12_1p50X)
     strncpy(output_base_filename, "composite_12", 24);
@@ -564,9 +557,11 @@ int main(int argc, char *argv[])
     strncpy(output_base_filename, "composite_12", 24);
   else if (G_source == SOURCE_COMPOSITE_18_1X)
     strncpy(output_base_filename, "composite_18", 24);
-  else if (G_source == SOURCE_COMPOSITE_24_0p75X)
-    strncpy(output_base_filename, "composite_24", 24);
+  else if (G_source == SOURCE_COMPOSITE_18_1X_ROTATED)
+    strncpy(output_base_filename, "composite_18", 24);
   else if (G_source == SOURCE_COMPOSITE_24_3X)
+    strncpy(output_base_filename, "composite_24", 24);
+  else if (G_source == SOURCE_COMPOSITE_24_3X_ROTATED)
     strncpy(output_base_filename, "composite_24", 24);
   else if (G_source == SOURCE_COMPOSITE_36_2X)
     strncpy(output_base_filename, "composite_36", 24);
@@ -601,9 +596,9 @@ int main(int argc, char *argv[])
     strncpy(source_name, "Approx NES", 24);
   else if (G_source == SOURCE_APPROX_NES_ROTATED)
     strncpy(source_name, "Approx NES", 24);
-  else if (G_source == SOURCE_COMPOSITE_06_0p75X)
-    strncpy(source_name, "Composite 06", 24);
   else if (G_source == SOURCE_COMPOSITE_06_3X)
+    strncpy(source_name, "Composite 06", 24);
+  else if (G_source == SOURCE_COMPOSITE_06_3X_ROTATED)
     strncpy(source_name, "Composite 06", 24);
   else if (G_source == SOURCE_COMPOSITE_12_1p50X)
     strncpy(source_name, "Composite 12", 24);
@@ -611,9 +606,11 @@ int main(int argc, char *argv[])
     strncpy(source_name, "Composite 12", 24);
   else if (G_source == SOURCE_COMPOSITE_18_1X)
     strncpy(source_name, "Composite 18", 24);
-  else if (G_source == SOURCE_COMPOSITE_24_0p75X)
-    strncpy(source_name, "Composite 24", 24);
+  else if (G_source == SOURCE_COMPOSITE_18_1X_ROTATED)
+    strncpy(source_name, "Composite 18", 24);
   else if (G_source == SOURCE_COMPOSITE_24_3X)
+    strncpy(source_name, "Composite 24", 24);
+  else if (G_source == SOURCE_COMPOSITE_24_3X_ROTATED)
     strncpy(source_name, "Composite 24", 24);
   else if (G_source == SOURCE_COMPOSITE_36_2X)
     strncpy(source_name, "Composite 36", 24);
@@ -634,8 +631,8 @@ int main(int argc, char *argv[])
     write_gradient_svg(output_svg_filenames[2], source_name, "Hilite",  4, 2);
   }
   /* 6 color gradients */
-  else if ( (G_source == SOURCE_COMPOSITE_06_0p75X) || 
-            (G_source == SOURCE_COMPOSITE_06_3X))
+  else if ( (G_source == SOURCE_COMPOSITE_06_3X) || 
+            (G_source == SOURCE_COMPOSITE_06_3X_ROTATED))
   {
     /* 4 tone shadow: 0, 1, 2, 3        */
     /* 4 tone mid:       1, 2, 3, 4     */
@@ -656,7 +653,8 @@ int main(int argc, char *argv[])
     write_gradient_svg(output_svg_filenames[2], source_name, "Hilite",  8, 4);
   }
   /* 18 color gradients */
-  else if (G_source == SOURCE_COMPOSITE_18_1X)
+  else if ( (G_source == SOURCE_COMPOSITE_18_1X) || 
+            (G_source == SOURCE_COMPOSITE_18_1X_ROTATED))
   {
     /* 12 tone shadow: 0, 1, ..., 11  */
     /* 12 tone mid:    3, 4, ..., 14  */
@@ -666,8 +664,8 @@ int main(int argc, char *argv[])
     write_gradient_svg(output_svg_filenames[2], source_name, "Hilite", 12, 6);
   }
   /* 24 color gradients */
-  else if ( (G_source == SOURCE_COMPOSITE_24_0p75X) || 
-            (G_source == SOURCE_COMPOSITE_24_3X))
+  else if ( (G_source == SOURCE_COMPOSITE_24_3X) || 
+            (G_source == SOURCE_COMPOSITE_24_3X_ROTATED))
   {
     /* 16 tone shadow:  0, 1, ..., 15 */
     /* 16 tone mid:     4, 5, ..., 19 */
