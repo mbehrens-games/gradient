@@ -25,6 +25,8 @@ enum
 {
   SOURCE_APPROX_NES = 0,
   SOURCE_APPROX_NES_ROTATED,
+  SOURCE_COMPOSITE_04_1X,
+  SOURCE_COMPOSITE_04_1X_ROTATED,
   SOURCE_COMPOSITE_08_2X,
   SOURCE_COMPOSITE_08_2p50X,
   SOURCE_COMPOSITE_16_1X,
@@ -37,6 +39,7 @@ enum
 
 /* the table step is 1 / (n + 2), where */
 /* n is the number of colors per hue    */
+#define COMPOSITE_04_TABLE_STEP 0.166666666666667f  /* 1/6  */
 #define COMPOSITE_08_TABLE_STEP 0.1f                /* 1/10 */
 #define COMPOSITE_16_TABLE_STEP 0.055555555555556f  /* 1/18 */
 #define COMPOSITE_32_TABLE_STEP 0.029411764705882f  /* 1/34 */
@@ -59,6 +62,9 @@ float S_nes_sat[4] = {0.1995f,  0.342f, 0.346f, 0.1425f};
 float S_approx_nes_p_p[4] = {0.4f, 0.7f,  0.7f,   0.3f};
 float S_approx_nes_lum[4] = {0.2f, 0.35f, 0.65f,  0.85f};
 float S_approx_nes_sat[4] = {0.2f, 0.35f, 0.35f,  0.15f};
+
+float S_composite_04_lum[4];
+float S_composite_04_sat[4];
 
 float S_composite_08_lum[8];
 float S_composite_08_sat[8];
@@ -87,6 +93,16 @@ int     S_table_length;
 short int generate_voltage_tables()
 {
   int k;
+
+  /* composite 04 tables */
+  for (k = 0; k < 2; k++)
+  {
+    S_composite_04_lum[k] = (k + 1) * COMPOSITE_04_TABLE_STEP;
+    S_composite_04_lum[3 - k] = 1.0f - S_composite_04_lum[k];
+
+    S_composite_04_sat[k] = S_composite_04_lum[k];
+    S_composite_04_sat[3 - k] = S_composite_04_sat[k];
+  }
 
   /* composite 08 tables */
   for (k = 0; k < 4; k++)
@@ -131,6 +147,13 @@ short int set_voltage_table_pointers()
   {
     S_luma_table = S_approx_nes_lum;
     S_saturation_table = S_approx_nes_sat;
+    S_table_length = 4;
+  }
+  else if ( (G_source == SOURCE_COMPOSITE_04_1X) || 
+            (G_source == SOURCE_COMPOSITE_04_1X_ROTATED))
+  {
+    S_luma_table = S_composite_04_lum;
+    S_saturation_table = S_composite_04_sat;
     S_table_length = 4;
   }
   else if ( (G_source == SOURCE_COMPOSITE_08_2X) || 
@@ -219,7 +242,9 @@ short int generate_shades_from_source()
     add_shade(255, 255, 255);
   }
   /* composite source */
-  else if ( (G_source == SOURCE_COMPOSITE_08_2X)          || 
+  else if ( (G_source == SOURCE_COMPOSITE_04_1X)          || 
+            (G_source == SOURCE_COMPOSITE_04_1X_ROTATED)  || 
+            (G_source == SOURCE_COMPOSITE_08_2X)          || 
             (G_source == SOURCE_COMPOSITE_08_2p50X)       || 
             (G_source == SOURCE_COMPOSITE_16_1X)          || 
             (G_source == SOURCE_COMPOSITE_16_1X_ROTATED)  || 
@@ -441,6 +466,8 @@ int main(int argc, char *argv[])
 
       if (!strcmp("approx_nes", argv[i]))
         G_source = SOURCE_APPROX_NES;
+      else if (!strcmp("composite_04", argv[i]))
+        G_source = SOURCE_COMPOSITE_04_1X;
       else if (!strcmp("composite_08", argv[i]))
         G_source = SOURCE_COMPOSITE_08_2X;
       else if (!strcmp("composite_16", argv[i]))
@@ -467,6 +494,10 @@ int main(int argc, char *argv[])
     strncpy(output_base_filename, "approx_nes", 16);
   else if (G_source == SOURCE_APPROX_NES_ROTATED)
     strncpy(output_base_filename, "approx_nes", 24);
+  else if (G_source == SOURCE_COMPOSITE_04_1X)
+    strncpy(output_base_filename, "composite_04", 24);
+  else if (G_source == SOURCE_COMPOSITE_04_1X_ROTATED)
+    strncpy(output_base_filename, "composite_04", 24);
   else if (G_source == SOURCE_COMPOSITE_08_2X)
     strncpy(output_base_filename, "composite_08", 24);
   else if (G_source == SOURCE_COMPOSITE_08_2p50X)
@@ -512,6 +543,10 @@ int main(int argc, char *argv[])
     strncpy(source_name, "Approx NES", 24);
   else if (G_source == SOURCE_APPROX_NES_ROTATED)
     strncpy(source_name, "Approx NES", 24);
+  else if (G_source == SOURCE_COMPOSITE_04_1X)
+    strncpy(source_name, "Composite 04", 24);
+  else if (G_source == SOURCE_COMPOSITE_04_1X_ROTATED)
+    strncpy(source_name, "Composite 04", 24);
   else if (G_source == SOURCE_COMPOSITE_08_2X)
     strncpy(source_name, "Composite 08", 24);
   else if (G_source == SOURCE_COMPOSITE_08_2p50X)
@@ -541,6 +576,17 @@ int main(int argc, char *argv[])
     write_gradient_svg(output_svg_filenames[0], source_name, "Shadow",  4, 0);
     write_gradient_svg(output_svg_filenames[1], source_name, "Mid",     4, 1);
     write_gradient_svg(output_svg_filenames[2], source_name, "Hilite",  4, 2);
+  }
+  /* 4 color gradients */
+  else if ( (G_source == SOURCE_COMPOSITE_04_1X) || 
+            (G_source == SOURCE_COMPOSITE_04_1X_ROTATED))
+  {
+    /* 3 tone shadow: 0, 1, 2     */
+    /* 4 tone mid:    0, 1, 2, 3  */
+    /* 3 tone hilite:    1, 2, 3  */
+    write_gradient_svg(output_svg_filenames[0], source_name, "Shadow",  3, 0);
+    write_gradient_svg(output_svg_filenames[1], source_name, "Mid",     4, 0);
+    write_gradient_svg(output_svg_filenames[2], source_name, "Hilite",  3, 1);
   }
   /* 8 color gradients */
   else if ( (G_source == SOURCE_COMPOSITE_08_2X) || 
